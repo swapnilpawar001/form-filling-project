@@ -48,20 +48,57 @@ export default function Analyze() {
     const headers: Record<string, string> = {};
     const sampleRow: Record<string, string> = {};
     
+    const rightAnswers: Record<string, string> = {
+      "1. What is cybersecurity?": "Protecting your phone and various other apps to stay safe digitally.",
+      "2. Out of the list below, which according to you is a cyberthreat?": "All of the above",
+      "3. Which of the following is a strong password ?": "Myp@ssw0rd!2025",
+      "4. How often should you change your online passwords?": "Immediately after you suspect any security threat",
+      "5. Which of these is a good practice to prevent cyber attacks?": "Regularly updating passwords",
+      "6. Which device is most vulnerable to cyber attacks?": "Devices without updated software",
+      "7. What would you do if you receive a call from a HR from one of the known Job portal and asking for you to register online by paying Rs.200/- and get your confirmation?": "Immediately report to cyber crime cell and block them",
+      "8. How can you protect your UPI account if your phone is lost?": "Block your UPI service immediately via your bank or app",
+      "9.  If your social media account is hacked, where would you report it?\n(You can choose more than one answer)": "Report to cyber security cell, Call '1930'",
+      "10. What will you do, when you are unsure about a delivery notification of the courier on your phone? ": "Visit the official courier website and enter the tracking details manually",
+      "gender": "Female",
+      "highest qualification": "Graduation",
+      "batch no": "Nshagaga",
+      "sixer class id": "63626266",
+      "center": "Mumbai - Infosys Foundation CWW",
+      "program": "CWW AI"
+    };
+
     analyzedData.fields.forEach((field) => {
       headers[field.label] = "";
       // Add sample data based on field label/type
-      const label = field.label.toLowerCase();
-      if (label.includes("name")) {
-        sampleRow[field.label] = "John Doe";
-      } else if (label.includes("email")) {
-        sampleRow[field.label] = "john.doe@example.com";
-      } else if (label.includes("phone") || label.includes("mobile")) {
-        sampleRow[field.label] = "1234567890";
-      } else if (field.options && field.options.length > 0) {
-        sampleRow[field.label] = field.options[0];
+      const label = field.label.toLowerCase().trim();
+      
+      // Check for exact question match first
+      if (rightAnswers[field.label]) {
+        sampleRow[field.label] = rightAnswers[field.label];
       } else {
-        sampleRow[field.label] = "Sample Answer";
+        // Fallback to keyword matching
+        let found = false;
+        for (const [key, value] of Object.entries(rightAnswers)) {
+          if (label.includes(key)) {
+            sampleRow[field.label] = value;
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          if (label.includes("name")) {
+            sampleRow[field.label] = "John Doe";
+          } else if (label.includes("email")) {
+            sampleRow[field.label] = "john.doe@example.com";
+          } else if (label.includes("phone") || label.includes("mobile")) {
+            sampleRow[field.label] = "8362194824";
+          } else if (field.options && field.options.length > 0) {
+            sampleRow[field.label] = field.options[0];
+          } else {
+            sampleRow[field.label] = "Sample Answer";
+          }
+        }
       }
     });
 
