@@ -1,0 +1,205 @@
+Alright 🔥
+Here is a **complete, production-grade MASTER PROMPT** you can **directly paste into Replit AI / Ghostwriter / any app-builder AI** to build the automation exactly as you described.
+
+---
+
+## ✅ **MASTER PROMPT: Google Form Auto-Submission App (No Ownership Required)**
+
+---
+
+### 🎯 **GOAL**
+
+Build a **web-based automation app** that submits responses to a **public Google Form (multi-page)** using data from an **Excel file or Google Sheet**, **without requiring form ownership, Google login, or Google Forms API**.
+
+This app must work for **third-party Google Forms** and submit responses **as a public user**.
+
+---
+
+### 🔗 **TARGET FORM**
+
+```
+https://forms.gle/yVd2rJbbSeAF4DoZ8
+```
+
+(The form is public, multi-page, and NOT owned by the user)
+
+---
+
+## 🚫 **STRICT CONSTRAINTS (MANDATORY)**
+
+* ❌ No Google Forms API
+* ❌ No Google authentication
+* ❌ No form edit or ownership access
+* ❌ No browser automation (no Selenium, no Playwright, no clicking “Next”)
+* ✅ Only HTTP requests allowed
+* ✅ Must work with third-party public Google Forms
+
+---
+
+## 🧠 **CORE LOGIC TO IMPLEMENT**
+
+### 1️⃣ **Form Analysis Engine**
+
+* Accept a **Google Form URL**
+* Convert short URL → full form URL
+* Generate **pre-filled form URL**
+* Automatically extract:
+
+  * `entry.xxxxx` field IDs
+  * Question labels
+  * Field types (text, MCQ, checkbox, dropdown)
+* Detect **multi-page form structure**
+* Extract **all fields from Page 1 + Page 2**
+
+---
+
+### 2️⃣ **Template Sheet Generator**
+
+* Automatically generate a **sample Excel template**
+* Column format:
+
+```
+Name | entry.1519499461
+Mobile No | entry.2108335118
+Gender | entry.518083561
+...
+Status
+```
+
+* One column per `entry.xxxxx`
+* Add **Status column** with default = `Pending`
+* Allow user to **download template**
+
+---
+
+### 3️⃣ **Input Support**
+
+* Upload Excel (.xlsx)
+* OR connect Google Sheet (via public CSV export)
+* Each row = one form submission
+* Read only rows where:
+
+```
+Status != "Submitted"
+```
+
+---
+
+### 4️⃣ **Form Submission Engine**
+
+* Submit using:
+
+```
+POST https://docs.google.com/forms/d/e/{FORM_ID}/formResponse
+```
+
+#### Payload Rules:
+
+* `entry.xxxxx=value`
+* Checkbox values → repeat same `entry.xxxxx`
+* Multiple answers → comma-separated → split correctly
+* Encode values using `application/x-www-form-urlencoded`
+
+---
+
+### 5️⃣ **Multi-Page Google Form Handling (CRITICAL)**
+
+* DO NOT simulate page navigation
+* Submit **ALL entry.xxxxx values in ONE POST**
+* Ensure Page-1 and Page-2 fields are included together
+* Handle hidden `pageHistory` automatically if required
+* Submission should succeed even for multi-page forms
+
+---
+
+### 6️⃣ **Execution Rules**
+
+* Process max **20–30 rows per batch**
+* Add delay (1–2 seconds) between submissions
+* Update Status column:
+
+  * ✅ `Submitted`
+  * ❌ `Failed – <error>`
+* Prevent duplicate submissions
+* Retry failed rows once only
+
+---
+
+### 7️⃣ **UI REQUIREMENTS**
+
+* Simple web UI:
+
+  * Form URL input
+  * “Analyze Form” button
+  * “Download Template” button
+  * Upload Excel button
+  * Submit button
+* Show logs:
+
+  * Row number
+  * Submission result
+
+---
+
+## 🧪 **TECH STACK (REPLIT FRIENDLY)**
+
+* Backend: Node.js (Express) OR Python (Flask/FastAPI)
+* HTTP client: Axios / Requests
+* Excel parsing:
+
+  * Node: `xlsx`
+  * Python: `pandas`, `openpyxl`
+* No external automation tools
+
+---
+
+## 🛡️ **SAFETY & RELIABILITY**
+
+* Rate limiting
+* Input validation
+* Graceful error handling
+* No captcha bypass attempts
+* Respect Google’s public submission limits
+
+---
+
+## 📦 **FINAL OUTPUT EXPECTATION**
+
+* Fully working Replit app
+* Can submit **multi-page Google Form responses**
+* Works for **forms not owned by the user**
+* Uses **sheet-based bulk automation**
+* Page 1 + Page 2 data must be submitted correctly
+* Generates reusable template for future uploads
+
+---
+
+## 🧩 **DELIVERABLE**
+
+Provide:
+
+1. Backend code
+2. Minimal frontend
+3. README explaining:
+
+   * How to analyze form
+   * How template works
+   * How to upload and submit
+
+---
+
+### ⚠️ IMPORTANT
+
+This app is for **educational & survey automation use only**.
+Do NOT use for spam or abuse.
+
+---
+
+If you want, next I can:
+
+* ✅ Generate **actual Node.js code**
+* ✅ Create **n8n JSON workflow**
+* ✅ Build **Python version**
+* ✅ Debug your current failing second-page issue
+
+Just tell me 👌
