@@ -89,29 +89,48 @@ async function submitFormRow(formUrl: string, rowData: any) {
         submitUrl = submitUrl.split('?')[0].replace(/\/$/, '') + '/formResponse';
     }
 
-    // Convert rowData keys (entry.123) to URLSearchParams
+    // Map rowData keys (Labels) to Entry IDs for submission
     const params = new URLSearchParams();
     
-    for (const [key, value] of Object.entries(rowData)) {
-        if (key.startsWith('entry.')) {
-            params.append(key, String(value));
+    // Crucial hidden fields for Google Forms
+    params.append('fvv', '1');
+    params.append('draftResponse', '[]');
+    params.append('pageHistory', '0'); 
+    params.append('fbzx', '-123456789'); 
+    
+    // The form we are submitting to
+    const formFields = await storage.getForm(Number(rowData.formId));
+    if (formFields) {
+        for (const field of formFields.fields as any[]) {
+            const value = rowData[field.label];
+            if (value !== undefined && field.entryId) {
+                params.append(field.entryId, String(value));
+            }
+        }
+    } else {
+        // Fallback: search for entry. keys in rowData if form data not found
+        for (const [key, value] of Object.entries(rowData)) {
+            if (key.startsWith('entry.')) {
+                params.append(key, String(value));
+            }
         }
     }
-
-    // Standard Google Forms hidden fields (optional but good for simulating real browser)
-    // params.append('fvv', '1');
-    // params.append('pageHistory', '0'); // Simplistic multi-page handling: try 0, or 0,1,2
 
     try {
         const res = await axios.post(submitUrl, params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': formUrl, // Some forms check referer
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
         return { success: true };
     } catch (error: any) {
-        return { success: false, error: error.message };
+        // Google Forms often returns 302 on success, which axios might treat as error if not handled
+        if (error.response && (error.response.status === 302 || error.response.status === 200)) {
+            return { success: true };
+        }
+        return { success: false, error: `Status ${error.response?.status || 'Unknown'}: ${error.message}` };
     }
 }
 
@@ -222,7 +241,7 @@ export async function registerRoutes(
     let newFail = 0;
 
     for (const row of rows) {
-        const result = await submitFormRow(form.url, row.rowData);
+        const result = await submitFormRow(form.url, { ...row.rowData, formId: form.id });
         if (result.success) {
             await storage.updateJobRow(row.id, 'success', 'Submitted');
             newSuccess++;
