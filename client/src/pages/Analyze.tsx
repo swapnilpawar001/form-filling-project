@@ -45,14 +45,27 @@ export default function Analyze() {
     if (!analyzedData) return;
     
     // Create headers from Entry IDs (best for mapping) or Labels
-    const headers = analyzedData.fields.reduce((acc, field) => {
-      // Prefer label for readability, mapping happens by label match usually or order
-      // For this app, let's assume we map by Header Name matches Field Label
-      acc[field.label] = ""; 
-      return acc;
-    }, {} as Record<string, string>);
+    const headers: Record<string, string> = {};
+    const sampleRow: Record<string, string> = {};
+    
+    analyzedData.fields.forEach((field) => {
+      headers[field.label] = "";
+      // Add sample data based on field label/type
+      const label = field.label.toLowerCase();
+      if (label.includes("name")) {
+        sampleRow[field.label] = "John Doe";
+      } else if (label.includes("email")) {
+        sampleRow[field.label] = "john.doe@example.com";
+      } else if (label.includes("phone") || label.includes("mobile")) {
+        sampleRow[field.label] = "1234567890";
+      } else if (field.options && field.options.length > 0) {
+        sampleRow[field.label] = field.options[0];
+      } else {
+        sampleRow[field.label] = "Sample Answer";
+      }
+    });
 
-    const ws = XLSX.utils.json_to_sheet([headers]);
+    const ws = XLSX.utils.json_to_sheet([sampleRow], { header: Object.keys(headers) });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, `${analyzedData.title.replace(/\s+/g, "_")}_template.xlsx`);
