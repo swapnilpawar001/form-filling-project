@@ -1,23 +1,22 @@
-
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // === TABLE DEFINITIONS ===
 
 // Stores analyzed form metadata
-export const forms = pgTable("forms", {
-  id: serial("id").primaryKey(),
+export const forms = sqliteTable("forms", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   url: text("url").notNull(),
   title: text("title").notNull(),
   // fields stores the extracted questions: { id: string, label: string, type: string, entryId: string }[]
-  fields: jsonb("fields").notNull(), 
-  createdAt: timestamp("created_at").defaultNow(),
+  fields: text("fields").notNull(), // JSON string
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
 // Stores bulk submission jobs
-export const jobs = pgTable("jobs", {
-  id: serial("id").primaryKey(),
+export const jobs = sqliteTable("jobs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   formId: integer("form_id").references(() => forms.id).notNull(),
   status: text("status").notNull().default("pending"), // pending, processing, completed
   filename: text("filename").notNull(),
@@ -25,17 +24,17 @@ export const jobs = pgTable("jobs", {
   processedRows: integer("processed_rows").notNull().default(0),
   successCount: integer("success_count").notNull().default(0),
   failCount: integer("fail_count").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
 // Stores individual row data and status
-export const jobRows = pgTable("job_rows", {
-  id: serial("id").primaryKey(),
+export const jobRows = sqliteTable("job_rows", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   jobId: integer("job_id").references(() => jobs.id).notNull(),
-  rowData: jsonb("row_data").notNull(), // The actual data to submit
+  rowData: text("row_data").notNull(), // JSON string
   status: text("status").notNull().default("pending"), // pending, success, failed
   resultMessage: text("result_message"), // Error message or success response
-  submittedAt: timestamp("submitted_at"),
+  submittedAt: integer("submitted_at", { mode: 'timestamp' }),
 });
 
 // === SCHEMAS ===
